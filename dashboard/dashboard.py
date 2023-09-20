@@ -3,8 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-df = pd.read_csv('main_data.csv')
-rfm_df = pd.read_csv('rfm.csv')
+df = pd.read_csv('dashboard/main_data.csv')
+rfm_df = pd.read_csv('dashboard/rfm.csv')
 
 
 def create_by_city(df):

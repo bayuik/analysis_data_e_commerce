@@ -11,8 +11,7 @@ Run Streamlit Dashboard
 -------------
 1. Open Terminal
     ```bash
-    cd dashboard
-    streamlit run dashboard.py
+    streamlit run dashboard/dashboard.py
     ```
 2. Open Browser and go to http://localhost:8501
 3. Enjoy!
