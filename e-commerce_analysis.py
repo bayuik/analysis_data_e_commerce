@@ -201,6 +201,9 @@ plt.show()
 # %% [markdown]
 # ### RFM Analysis
 
+# %% [markdown]
+# RFM Analysis adalah metode yang digunakan untuk menganalisis perilaku pelanggan. RFM adalah singkatan dari Recency, Frequency, dan Monetary. RFM Analysis digunakan untuk mengelompokkan pelanggan menjadi beberapa segmen berdasarkan perilaku mereka. RFM Analysis dapat membantu perusahaan untuk memahami perilaku pelanggan dan meningkatkan penjualan dengan cara yang lebih efektif. RFM Analysis dapat digunakan untuk meningkatkan retensi pelanggan, meningkatkan loyalitas pelanggan, dan meningkatkan penjualan. 
+
 # %%
 rfm_df = df.groupby(by='customer_id', as_index=False).agg({
     "order_purchase_timestamp": "max",
@@ -213,6 +216,7 @@ recent_date = pd.to_datetime(df['order_purchase_timestamp']).max()
 rfm_df['recency'] = rfm_df['max_order_timestamp'].apply(lambda x: (recent_date - x).days)
 
 rfm_df.drop("max_order_timestamp", axis=1, inplace=True)
+rfm_df.to_csv('datasets/rfm.csv', index=False)
 rfm_df.head()
 
 # %%
