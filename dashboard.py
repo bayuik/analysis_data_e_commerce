@@ -14,16 +14,17 @@ def create_by_city(df):
     return top_category
 
 
-def create_correlation(df, corr1, corr2, corr3):
-    correlation_maxtrix = df[[corr1, corr2, corr3]].corr()
+def create_correlation(df, selected_variables):
+    selected_variables = [x.lower().replace(' ', '_') for x in selected_variables]
+    print(selected_variables)
+    correlation_maxtrix = df[selected_variables].corr()
     return correlation_maxtrix
 
 
 with st.sidebar:
     city = st.selectbox('Select City', df['customer_city'].unique())
-    corr1 = st.selectbox('Select Correlation 1', df.columns)
-    corr2 = st.selectbox('Select Correlation 2', df.columns)
-    corr3 = st.selectbox('Select Correlation 3', df.columns)
+    corr_variables = st.multiselect(
+        'Select Correlation Variables', options=('Product Weight G', 'Freight Value', 'Review Score'))
 
 main_df = df[df['customer_city'] == city]
 by_city_df = create_by_city(main_df)
@@ -40,8 +41,11 @@ plt.ylabel('Purchase Count')
 st.pyplot(fig)
 
 st.subheader('Correlation Matrix')
-plt.figure(figsize=(10, 8))
-correlation_matrix = create_correlation(df, corr1, corr2, corr3)
-sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
-plt.title(f"Correlation between {corr1}, {corr2}, and {corr3}")
-st.pyplot(plt)
+if len(corr_variables) >= 2:
+    plt.figure(figsize=(10, 8))
+    correlation_matrix = create_correlation(main_df, corr_variables)
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+    plt.title(f"Correlation between {corr_variables}")
+    st.pyplot(plt)
+else:
+    st.write('Please select at leaest 2 variables')

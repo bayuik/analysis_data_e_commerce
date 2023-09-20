@@ -26,7 +26,7 @@ import seaborn as sns
 # ### Gathering Data
 
 # %% [markdown]
-# #### Customer Dataset
+# #### Customers Dataset
 
 # %%
 customers_dataset = pd.read_csv('datasets/customers_dataset.csv')
@@ -87,48 +87,61 @@ print(f"duplicated: {products_dataset.duplicated().sum()}")
 # ### Cleaning Data
 
 # %%
-customers_dataset.drop(
-    ['customer_unique_id', 'customer_zip_code_prefix', 'customer_state'], axis=1, inplace=True)
-customers_dataset.head()
+customer_df = customers_dataset[['customer_id', 'customer_city']]
+customer_df.head()
 
 # %%
-orders_dataset.drop(['order_status', 'order_purchase_timestamp', 'order_approved_at', 'order_delivered_carrier_date',
-                    'order_delivered_customer_date', 'order_estimated_delivery_date'], axis=1, inplace=True)
-orders_dataset
+orders_df = orders_dataset[['order_id', 'customer_id', 'order_purchase_timestamp']]
+orders_df.head()
 
 # %%
-order_items_dataset.drop(
-    ['order_item_id', 'seller_id', 'shipping_limit_date', 'price'], axis=1, inplace=True)
-order_items_dataset.head()
+order_items_df = order_items_dataset[['order_id', 'product_id', 'freight_value', 'price']]
+order_items_df.head()
 
 # %%
-order_reviews_dataset.drop(['review_comment_title', 'review_creation_date',
-                           'review_answer_timestamp', 'review_comment_message'], axis=1, inplace=True)
-order_reviews_dataset.head()
+order_reviews_df = order_reviews_dataset[['review_id', 'order_id', 'review_score']]
+order_reviews_df.head()
 
 # %%
-products_dataset.drop(['product_name_lenght', 'product_description_lenght', 'product_photos_qty',
-                      'product_length_cm', 'product_height_cm', 'product_width_cm'], axis=1, inplace=True)
-products_dataset.head()
+products_df = products_dataset[['product_id', 'product_category_name', 'product_weight_g']]
+products_df.head()
+
+# %% [markdown]
+# #### Merge all datasets
+
+# %%
+df = pd.merge(customer_df, orders_df, on='customer_id')
+df = pd.merge(df, order_items_df, on='order_id')
+df = pd.merge(df, order_reviews_df, on='order_id')
+df = pd.merge(df, products_df, on='product_id')
+df.head()
+
+# %% [markdown]
+# #### Save all data to csv
+
+# %%
+df.to_csv('datasets/ecommerce_dataset.csv', index=False)
 
 # %% [markdown]
 # ## Exploratory Data Analysis (EDA)
 
-# %%
-df = pd.merge(customers_dataset, orders_dataset, on='customer_id')
-df = pd.merge(df, order_items_dataset, on='order_id')
-df = pd.merge(df, order_reviews_dataset, on='order_id')
-df = pd.merge(df, products_dataset, on='product_id')
-df
+# %% [markdown]
+# #### Explore Data
 
 # %%
 df.describe(include='all')
+
+# %% [markdown]
+# #### Explore product weight and review score
 
 # %%
 df.groupby(by='review_score').agg({
     'customer_id': 'nunique',
     'product_weight_g': ["max", "min", "mean", "std"]
-})
+}).reset_index()
+
+# %% [markdown]
+# #### Explore freight value and review score
 
 # %%
 df.groupby(by='review_score').agg({
@@ -136,8 +149,17 @@ df.groupby(by='review_score').agg({
     'freight_value': ["max", "min", "mean", "std"]
 }).reset_index()
 
+# %% [markdown]
+# #### Explore order rank in each state
+
 # %%
 df.groupby(by='customer_city').order_id.nunique().sort_values(ascending=False)
+
+# %% [markdown]
+# 
+
+# %% [markdown]
+# #### Explore product category and review score
 
 # %%
 df.groupby(by=['product_category_name']).agg({
@@ -174,6 +196,52 @@ correlation_matrix = df[['product_weight_g', 'freight_value', 'review_score']].c
 plt.figure(figsize=(10, 8))
 sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
 plt.title('Correlation between Product Weight, Freight Value, and Customer Satisfaction Score')
+plt.show()
+
+# %% [markdown]
+# ### RFM Analysis
+
+# %%
+rfm_df = df.groupby(by='customer_id', as_index=False).agg({
+    "order_purchase_timestamp": "max",
+    "order_id": "nunique",
+    "price": "sum"
+})
+rfm_df.columns = ['customer_id', 'max_order_timestamp', 'frequency', 'monetary']
+rfm_df['max_order_timestamp'] = pd.to_datetime(rfm_df['max_order_timestamp']) 
+recent_date = pd.to_datetime(df['order_purchase_timestamp']).max()
+rfm_df['recency'] = rfm_df['max_order_timestamp'].apply(lambda x: (recent_date - x).days)
+
+rfm_df.drop("max_order_timestamp", axis=1, inplace=True)
+rfm_df.head()
+
+# %%
+fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(30, 6))
+
+colors = ["#72BCD4", "#72BCD4", "#72BCD4", "#72BCD4", "#72BCD4"]
+
+sns.barplot(y="recency", x="customer_id", data=rfm_df.sort_values(
+    by="recency", ascending=True).head(5), palette=colors, ax=ax[0])
+ax[0].set_ylabel(None)
+ax[0].set_xlabel(None)
+ax[0].set_title("By Recency (days)", loc="center", fontsize=18)
+ax[0].tick_params(axis='x', labelsize=15)
+
+sns.barplot(y="frequency", x="customer_id", data=rfm_df.sort_values(
+    by="frequency", ascending=False).head(5), palette=colors, ax=ax[1])
+ax[1].set_ylabel(None)
+ax[1].set_xlabel(None)
+ax[1].set_title("By Frequency", loc="center", fontsize=18)
+ax[1].tick_params(axis='x', labelsize=15)
+
+sns.barplot(y="monetary", x="customer_id", data=rfm_df.sort_values(
+    by="monetary", ascending=False).head(5), palette=colors, ax=ax[2])
+ax[2].set_ylabel(None)
+ax[2].set_xlabel(None)
+ax[2].set_title("By Monetary", loc="center", fontsize=18)
+ax[2].tick_params(axis='x', labelsize=15)
+
+plt.suptitle("Best Customer Based on RFM Parameters (customer_id)", fontsize=20)
 plt.show()
 
 # %% [markdown]
