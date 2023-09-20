@@ -18,7 +18,7 @@ Run Streamlit Dashboard
 
 Streamlit Dashboard Preview
 ---------------------------
-https://e-commerce-analysis.streamlit.app/
+https://e-commerce.streamlit.app/
 
 ![Alt text](images/st_dashboard_1.png "Dashboard Preview 1")
 ![Alt text](images/st_dashboard_2.png "Dashboard Preview 2")
