@@ -13,5 +13,5 @@ Run Streamlit Dashboard
     ```bash
     streamlit run dashboard.py
     ```
-2. Open Browser and go to http://localhost:8502
+2. Open Browser and go to http://localhost:8501
 3. Enjoy!
