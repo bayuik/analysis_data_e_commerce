@@ -205,7 +205,10 @@ plt.show()
 # RFM Analysis adalah metode yang digunakan untuk menganalisis perilaku pelanggan. RFM adalah singkatan dari Recency, Frequency, dan Monetary. RFM Analysis digunakan untuk mengelompokkan pelanggan menjadi beberapa segmen berdasarkan perilaku mereka. RFM Analysis dapat membantu perusahaan untuk memahami perilaku pelanggan dan meningkatkan penjualan dengan cara yang lebih efektif. RFM Analysis dapat digunakan untuk meningkatkan retensi pelanggan, meningkatkan loyalitas pelanggan, dan meningkatkan penjualan. 
 
 # %%
-rfm_df = df.groupby(by='customer_id', as_index=False).agg({
+customer_id_mapping = {customer_id: i +1 for i, customer_id in enumerate(df['customer_id'].unique())}
+df['id'] = df['customer_id'].map(customer_id_mapping)
+
+rfm_df = df.groupby(by='id', as_index=False).agg({
     "order_purchase_timestamp": "max",
     "order_id": "nunique",
     "price": "sum"
@@ -230,7 +233,6 @@ ax[0].set_ylabel(None)
 ax[0].set_xlabel(None)
 ax[0].set_title("By Recency (days)", loc="center", fontsize=18)
 ax[0].tick_params(axis='x', labelsize=15)
-ax[0].set_xticklabels([1, 2, 3, 4, 5])
 
 sns.barplot(y="frequency", x="customer_id", data=rfm_df.sort_values(
     by="frequency", ascending=False).head(5), palette=colors, ax=ax[1])
@@ -238,7 +240,6 @@ ax[1].set_ylabel(None)
 ax[1].set_xlabel(None)
 ax[1].set_title("By Frequency", loc="center", fontsize=18)
 ax[1].tick_params(axis='x', labelsize=15)
-ax[1].set_xticklabels([1, 2, 3, 4, 5])
 
 sns.barplot(y="monetary", x="customer_id", data=rfm_df.sort_values(
     by="monetary", ascending=False).head(5), palette=colors, ax=ax[2])
@@ -246,7 +247,6 @@ ax[2].set_ylabel(None)
 ax[2].set_xlabel(None)
 ax[2].set_title("By Monetary", loc="center", fontsize=18)
 ax[2].tick_params(axis='x', labelsize=15)
-ax[2].set_xticklabels([1, 2, 3, 4, 5])
 
 plt.suptitle("Best Customer Based on RFM Parameters (customer_id)", fontsize=20)
 plt.show()
