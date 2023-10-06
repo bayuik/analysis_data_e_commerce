@@ -27,13 +27,12 @@ with st.sidebar:
         'Select Correlation Variables', options=('Product Weight G', 'Freight Value', 'Review Score'))
 
 main_df = df[df['customer_city'] == city]
-by_city_df = create_by_city(main_df)
 
 st.header('E-Commerce Dashboard')
 st.subheader('Top Order by City')
 fig, ax = plt.subplots(figsize=(20, 15))
 sns.barplot(x='product_category_name', y='purchase_count',
-            data=by_city_df.nlargest(10, 'purchase_count'))
+            data=create_by_city(main_df).nlargest(10, 'purchase_count'))
 plt.title(f"Most Purchases in {city.title()}")
 plt.xticks(rotation=45)
 plt.xlabel('Product Category')
