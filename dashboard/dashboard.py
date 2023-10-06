@@ -47,7 +47,7 @@ if len(corr_variables) >= 2:
     plt.title(f"Correlation between {corr_variables}")
     st.pyplot(plt)
 else:
-    st.write('Please select at leaest 2 variables')
+    st.write('Please select at least 2 variables')
     
 
 st.subheader('RFM Analysis')
